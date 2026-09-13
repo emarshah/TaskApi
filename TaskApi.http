@@ -9,6 +9,7 @@ Content-Type: application/json
 
 { 
     "title": "Learn minimal APIs", 
-    "isDone": false 
+    "isDone": false ,
+    "priority": 3
     }
 ###
