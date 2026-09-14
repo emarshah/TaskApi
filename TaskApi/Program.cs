@@ -59,3 +59,5 @@ public class TaskItem
     public bool IsDone { get; set; }
     public int Priority { get; set; }
 }
+
+public partial class Program { } 
