@@ -3,8 +3,12 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
-builder.Services.AddDbContext<TaskDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("TaskApiDb")));
+
+if (!builder.Environment.IsEnvironment("Testing"))
+{
+    builder.Services.AddDbContext<TaskDbContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("TaskApiDb")));
+}
 
 var app = builder.Build();
 
@@ -57,7 +61,6 @@ public class TaskItem
     public int Id { get; set; }
     public string Title { get; set; } = "";
     public bool IsDone { get; set; }
-    public int Priority { get; set; }
 }
 
-public partial class Program { } 
+public partial class Program { }
