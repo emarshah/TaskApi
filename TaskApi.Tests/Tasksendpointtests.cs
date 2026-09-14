@@ -1,14 +1,22 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using Xunit;
+using Xunit.Abstractions;
 
 public class TasksEndpointTests : IClassFixture<TaskApiFactory>
 {
     private readonly HttpClient _client;
+    private readonly ITestOutputHelper _output;
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
 
-    public TasksEndpointTests(TaskApiFactory factory)
+    public TasksEndpointTests(TaskApiFactory factory, ITestOutputHelper output)
     {
         _client = factory.CreateClient();
+        _output = output;
     }
 
     [Fact]
@@ -41,11 +49,21 @@ public class TasksEndpointTests : IClassFixture<TaskApiFactory>
         // Arrange
         var newTask = new { Title = "Check GET after POST", IsDone = false };
         var postResponse = await _client.PostAsJsonAsync("/tasks", newTask);
-        var created = await postResponse.Content.ReadFromJsonAsync<TaskItem>();
+
+        var postBody = await postResponse.Content.ReadAsStringAsync();
+        _output.WriteLine($"POST status: {postResponse.StatusCode}");
+        _output.WriteLine($"POST body: {postBody}");
+
+        var created = JsonSerializer.Deserialize<TaskItem>(postBody, JsonOptions);
+        _output.WriteLine($"Parsed created.Id: {created?.Id}");
 
         // Act
         var getResponse = await _client.GetAsync($"/tasks/{created!.Id}");
-        var fetched = await getResponse.Content.ReadFromJsonAsync<TaskItem>();
+        var getBody = await getResponse.Content.ReadAsStringAsync();
+        _output.WriteLine($"GET status: {getResponse.StatusCode}");
+        _output.WriteLine($"GET body: {getBody}");
+
+        var fetched = JsonSerializer.Deserialize<TaskItem>(getBody, JsonOptions);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
